@@ -1,0 +1,46 @@
+# SVHN(source) → MNIST(target), ResNet-26, L=3 (C=1024, S=2x2), N=4 (degenerate) → D=16384
+source_dataset:
+  name: svhn
+target_dataset:
+  name: mnist
+
+regressor:
+  source: result/source/svhn/source_model_114500.pt
+  type: image
+  config: {backbone: resnet26, pretrained: false, in_channels: 3}
+
+mhksa:
+  layer: 3
+  n_cells: 4
+  adapter_ckpt: result/mhksa/svhn/lagm_adapter.pt
+  adapter:                      # Stage 1
+    beta_init: 0.0
+    alpha_init: 4.0             # α≈0.982 (거의 pure LAP)
+    epochs: 5
+    lr: 1.0e-2                  # β_LAP, α̃
+    head_lr: 1.0e-3             # 임시 linear head
+    batch_size: 256
+  encoder:                      # Stage 2
+    n_heads: 3                  # H
+    rff_dim: 256                # M
+    wiener_rank: 256            # K_W
+    head_rank: 16               # P
+    final_rank: 100             # K  (H*P=48 < 100 → 자동으로 K=48)
+    eta: 1.0
+    m_range: [0.3, 3.0]
+    bandwidth_mode: random
+    cosine: false               # --cosine 플래그로 override
+    ridge_tau: 1.0e-4
+    max_pca_samples: 4096
+  stats_batch_size: 256
+  num_workers: 4
+  max_source_samples: null
+  tta:                          # Stage 3 (SSA 논문 설정과 동일)
+    train_mode: true
+    eps: 1.0e-8
+    optimizer:
+      param: fe_bn
+      name: Adam
+      config: {lr: 0.001, weight_decay: 0.0}
+    adapt_dataloader: {batch_size: 64, shuffle: true}
+    val_dataloader: {batch_size: 256}
