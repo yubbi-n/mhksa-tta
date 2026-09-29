@@ -23,7 +23,7 @@ bash run_mhksa.sh svhn
 
 하이퍼파라미터(H, M, K_W, P, K, N, L)는 §13 표 값을 dataset별 config에 넣어둠.
 
-## 계획서에 없어서 임의로 정한 부분 (선배 확인 필요)
+## 계획서에 없어서 임의로 정한 부분
 1. **Stage 1 objective**: 계획서엔 "Adapter pretrain"만 있음 → backbone frozen, g 위에 임시 linear head를 붙여 source label MSE로 β_LAP, α̃ 학습 (head는 버림). epochs=5, lr=1e-2.
 2. **m_h 샘플링**: "log-uniform"을 랜덤 샘플로 해석 (`bandwidth_mode: random`). 등간격은 `logspace`.
 3. **Per-head / final PCA 공분산**: §7·§8 식은 1/N_s지만 §0 규약(unbiased)을 따라 1/(N_s−1)로 통일. §9 target batch 분산은 식 그대로 1/N_B.
